@@ -1,6 +1,7 @@
 from __future__ import annotations
 import builtins
 import inspect
+import typing
 from inspect import isclass
 from typing import Dict, List
 from collections import namedtuple
@@ -75,4 +76,4 @@ def restricted(func):
                 assert get_exec_output(a), f"{restriction.condition} is False"
         return func(*args, **kwargs)
 
-    return wrapper
+    return typing.no_type_check(wrapper)
