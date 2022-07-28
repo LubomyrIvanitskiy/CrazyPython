@@ -62,6 +62,7 @@ class ProgressHandler5:
     def on_end(self, _):
         print("Handler 5. Start")
 
+Ellipsis
 
 channel.add_listeners(
     progress_handler3,
