@@ -6,7 +6,7 @@ There are plenty of Python libraries/scripts implementing Observer pattern in di
 The <a href="https://pypi.org/project/pymitter/">Pymitter library</a> is a good example of them.
 But he Pyemitter has few disadvantages:
 1. In order to make a function to be an observer you need to have the Subject already created, and mark the function with the corresponding decorator. In real projects it is not always the case.
-2. Event emitting allow to pass *args and **kwargs as without any restrictions about what that arguments should be. So it is easy to declare a function with one set arguments and subscribe it onto some events with another set of parameters which will lead to uncositency on the future
+2. Event emitting allow to pass args and kwargs as without any restrictions about what that arguments should be. So it is easy to declare a function with one set arguments and subscribe it onto some events with another set of parameters which will lead to uncositency in the future
 3. No way to subscribe an object with multiple methods
 Pros:
 1. Async support
