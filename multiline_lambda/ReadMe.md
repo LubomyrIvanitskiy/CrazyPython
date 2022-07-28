@@ -21,7 +21,7 @@ expressions.
 
 What if we'll go further and will add such abilities?
 
-For details take a look at <i>multiline_lambda/example.py</i>
+For details take a look at <a href=https://github.com/LubomyrIvanitskiy/CrazyPython/blob/c7154405f5b39ce7b6b2d31fe8886f6384372836/multiline_lambda/example.py>multiline_lambda/example.py</a>
 
 UDP:
 The code actually looks ugly (but at least it works:)), so it is not recommended to use it in your daily basis.
