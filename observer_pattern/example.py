@@ -1,6 +1,6 @@
 from time import sleep
 
-from tower import EventChannel, Event, event_listener
+from observer_pattern import EventChannel, Event, event_listener
 
 channel = EventChannel()
 
