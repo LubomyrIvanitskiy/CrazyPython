@@ -18,3 +18,5 @@ Using this library you'll have:
 1. Easy way to subscribe lambdas, functions or even methods onto single or multiple events
 2. No ambiguity in the arguments passed. All events have its own type with well documented typped parameters
 3. Renamed method for better correspondence to the Observer patter terminology
+
+Take a look at <a href="https://github.com/LubomyrIvanitskiy/CrazyPython/blob/c7154405f5b39ce7b6b2d31fe8886f6384372836/tower/example.py">examples</a> for the better perspective
