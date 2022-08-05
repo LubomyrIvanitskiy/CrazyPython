@@ -1,12 +1,7 @@
+import time
+from functools import wraps
+
 from inner_decorator import inner_decorator
-
-
-def cal_reporting(func):
-    def wrapper(*args, **kwargs):
-        print(func.__name__, args, kwargs, "is called")
-        return func(*args, **kwargs)
-
-    return wrapper
 
 
 def my_print(*args, **kwargs):
@@ -14,9 +9,21 @@ def my_print(*args, **kwargs):
         print(*args, **kwargs)
 
 
+def timeit(func):
+    @wraps(func)
+    def timeit_wrapper(*args, **kwargs):
+        start_time = time.perf_counter()
+        result = func(*args, **kwargs)
+        end_time = time.perf_counter()
+        total_time = end_time - start_time
+        print(f'Function {func.__name__}{args} {kwargs} Took {total_time:.4f} seconds')
+        return result
+
+    return timeit_wrapper
+
+
 @inner_decorator(
-    f1=cal_reporting,
-    f2=cal_reporting,
+    timeit,
     print=lambda _: my_print
 )
 def random_outer_func():
@@ -28,6 +35,7 @@ def random_outer_func():
 
     f1()
     f2(2, 2)
-    print("hello")
+    print("Good Bye")
+
 
 random_outer_func()

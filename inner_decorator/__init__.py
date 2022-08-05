@@ -71,33 +71,39 @@ def replace_inner_function(outer, new_inner, name=None):
     return res
 
 
-def inner_decorator(**kwargs):
+def inner_decorator(*args, **kwargs):
+    assert len(args) > 0 or len(kwargs) > 0
+
     def decorator(outer_func):
         code = type(outer_func.__code__)
         inner_functions = [f for f in outer_func.__code__.co_consts[1:] if isinstance(f, code)]
 
         new_outer_func = outer_func
         for f in inner_functions:
-            if f.co_name in kwargs:
-                inner_function = function(f, globals())
-                wrapped_func = kwargs[f.co_name](inner_function)
+            if f.co_name in kwargs or len(args) > 0:
+                wrappers = (*args, *((kwargs[f.co_name],) if f.co_name in kwargs else ()))
+                for wrapper in wrappers:
+                    inner_function = function(f, globals())
+                    wrapped_func = wrapper(inner_function)
 
-                def func_without_closure(*args, **kwargs):
-                    from inner_decorator import closures_hook
-                    import inspect
-                    wrapped_func_ = getattr(closures_hook, inspect.stack()[0][0].f_code.co_name + inspect.stack()[0][
-                        0].f_code.co_filename + str(inspect.stack()[0][0].f_code.co_firstlineno))
-                    return wrapped_func_(*args, **kwargs)
+                    def func_without_closure(*args, **kwargs):
+                        from inner_decorator import closures_hook
+                        import inspect
+                        wrapped_func_ = getattr(closures_hook,
+                                                inspect.stack()[0][0].f_code.co_name + inspect.stack()[0][
+                                                    0].f_code.co_filename + str(
+                                                    inspect.stack()[0][0].f_code.co_firstlineno))
+                        return wrapped_func_(*args, **kwargs)
 
-                func_without_closure.__name__ = f.co_name
-                func_without_closure.__code__ = func_without_closure.__code__.replace(
-                    co_name=f.co_name
-                )
-                setattr(closures_hook,
-                        f.co_name + func_without_closure.__code__.co_filename + str(
-                            func_without_closure.__code__.co_firstlineno),
-                        wrapped_func)
-                new_outer_func = replace_inner_function(new_outer_func, func_without_closure, name=f.co_name)
+                    func_without_closure.__name__ = f.co_name
+                    func_without_closure.__code__ = func_without_closure.__code__.replace(
+                        co_name=f.co_name
+                    )
+                    setattr(closures_hook,
+                            f.co_name + func_without_closure.__code__.co_filename + str(
+                                func_without_closure.__code__.co_firstlineno),
+                            wrapped_func)
+                    new_outer_func = replace_inner_function(new_outer_func, func_without_closure, name=f.co_name)
         new_conames = []
         for f_name in outer_func.__code__.co_names:
             if f_name in kwargs:
