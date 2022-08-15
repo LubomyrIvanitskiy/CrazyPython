@@ -28,3 +28,5 @@ but for the second case you'll have
 ```python
 ImportError: attempted relative import beyond top-level package
 ```
+
+This module fixes this error by hooking the import process and always selecting the longer module path if multiple paths are provided.
