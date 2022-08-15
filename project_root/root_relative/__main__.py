@@ -40,6 +40,11 @@ class Loader(object):
 class Importer(PathFinder):
     def find_spec(self, fullname, path=None, target=None):
         spec = super().find_spec(fullname, path, target)
+        if not spec.origin:
+            raise RuntimeError(
+                "This library does not support Namespace Packages yet. "
+                "Make sure all your packages has __init__.py fil within"
+            )
         found_paths = []
         for entry in sys.path:
             if len(entry) > 0 and spec.origin.startswith(entry):

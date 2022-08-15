@@ -1,12 +1,18 @@
 from setuptools import setup
 
+def readme():
+    with open('README.md') as f:
+        return f.read()
+
 setup(
-    name='from_root',
-    version='0.22',
-    packages=['from_root'],
+    name='root_relative',
+    version='0.28',
+    packages=['root_relative'],
     url='',
-    license='',
+    license='MIT',
     author='liubomyr.ivanitskyi',
     author_email='',
-    description=''
+    description='Module that allow to launch python module without requirements to start from working dir',
+    long_description=readme(),
+    long_description_content_type="text/markdown"
 )

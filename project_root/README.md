@@ -3,8 +3,8 @@ Tool for running CWD-agnostic Python scripts.
 With this module you can run your script from **any project nested folder without breaking your imports** (including relative imports).
 
 ```shell
-pip install from_root
-python -m from_root package1.module1
+pip install root-relative
+python -m root_relative package1.module1
 ```
 
 This line will try to find the module automatically and detect the project root folder based on the module name provided.
