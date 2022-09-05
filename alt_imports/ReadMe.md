@@ -23,8 +23,9 @@ pip install sdist/CrazyPython-0.0.0.tar.gz
 
 >>> from tags.math import *
 >>> add(2,2)
->>> diff(2,2)
 4
+>>> diff(2,2)
+0
 ```
 
 The module allow assign different tags for functions. Those tags can be used as alternative import path for better and more handy function grouping.
