@@ -6,14 +6,23 @@ pip install sdist/CrazyPython-0.0.0.tar.gz
 ```
 
 ```python
+# Module1
 >>> from tags import tag
 ...
 ... @tag("math")
-... def sum(a, b):
+... def add(a, b):
 ...    return a+b
 ...
+# Module2
+>>> from tags import tag
+...
+... @tag("math")
+... def diff(a, b):
+...    return a-b
+...
 
->>> from tags.math import sum
->>> sum(2,2)
+>>> from tags.math import *
+>>> add(2,2)
+>>> diff(2,2)
 4
 ```

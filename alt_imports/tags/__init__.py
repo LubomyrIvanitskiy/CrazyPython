@@ -21,7 +21,7 @@ def tag(*names):
     return decor
 
 
-manifest_file = "examples/__manifest__.py"
+manifest_file = "__manifest__.py"
 if os.path.exists(manifest_file):
     execfile(manifest_file)
 
