@@ -26,3 +26,14 @@ pip install sdist/CrazyPython-0.0.0.tar.gz
 >>> diff(2,2)
 4
 ```
+
+The module allow assign different tags for functions. Those tags can be used as alternative import path for better and more handy function grouping.
+
+Single function can have multiple tags.
+
+So, the same function, for example, may be imported in different ways:
+1. from original.package import validate_number
+2. from tags.features.login_flow import validate_number
+3. from tags.utils.string import validate_number
+
+Feel free to contribute and/or open issues!
