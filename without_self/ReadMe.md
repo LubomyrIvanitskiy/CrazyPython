@@ -49,8 +49,8 @@ class B(metaclass=NoSelf):      # Example of making all class methods as `nonsel
 
 a = A()
 print(
-    f"{a.foo()=}",              # Here the self_x and self_y are automatically obtained from the a instance
-    f"{A.foo(1, 2)=}",          # Sure, you can also define the arguments manually if you want
+    f"{a.foo()=}",              # Here the self_x and self_y are automatically obtained from the `a` instance
+    f"{A.foo(1, 2)=}",          # Sure, you can also pass the arguments manually if you want
     f"{B('hi').boo()=}",
     sep="\n"
 )
