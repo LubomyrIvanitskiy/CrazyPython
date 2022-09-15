@@ -66,8 +66,8 @@ class Callback(
 ```python
 class API:
     def __init__(self, callback: Callback):
-        assert isinstance(callback, Callback)
-        self.callback = callback  # <-- Here
+        assert isinstance(callback, Callback)   # <-- Here
+        self.callback = callback 
 ```
 
 3. Enjoy less buggy codebase
