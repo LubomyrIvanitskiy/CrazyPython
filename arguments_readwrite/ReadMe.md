@@ -98,5 +98,5 @@ Note: if a function declares all its arguments as a read-only - it is considered
 allowed to be run even without Execution permissions
 
 ### TODO:
-Add support for __setitem__ and __delitem__ as a Write-operations as well as for the __setitem__ as a Write operation
+Add support for `__setitem__` and `__delitem__` as a Write-operations as well as for the `__setitem__` as a Write operation
 
