@@ -43,7 +43,7 @@ Not good...
 
 How can we avoid such scenario?
 
-Using this package you can define you `response` argument as a read-only in the callback interface.
+Using this package you can define your `response` argument as a read-only in the callback interface.
 So if somebody tries to mutate it - the runtime error will occur. The explicit error is always better than hidden
 implicit silent bug.
 
@@ -71,6 +71,16 @@ class API:
 ```
 
 3. Enjoy less buggy codebase
+
+Now if somebody tries to inject some bad stuff into your `response` he will be disappointed.
+
+```python
+class UserCallback(Callback):
+
+    def on_success(self, result):
+        result.msg = "Fake message"         # will raise an error
+        print(result)
+```
 
 ### Notes
 
