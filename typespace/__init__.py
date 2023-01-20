@@ -1,6 +1,7 @@
 import ast
 import inspect
 import builtins
+import sys
 from collections import defaultdict
 from itertools import product
 
@@ -61,6 +62,26 @@ def validate(init_expressions, assert_expression, kwargs):
             exec(e, globals(), kwargs)
 
 
+class ContextDecorator:
+
+    def __init__(self, decorator):
+        self.decorator = decorator
+
+    def __enter__(self):
+        self.enter_locals = dict(**sys._getframe(0).f_back.f_locals)
+        return self.decorator.types
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        exit_locals = sys._getframe(0).f_back.f_locals
+        new_funcs = set(f for f in exit_locals if f not in self.enter_locals if inspect.isfunction(exit_locals[f]))
+        exit_locals.update({
+            f_name: self.decorator(exit_locals[f_name]) for f_name in new_funcs
+        })
+
+    def __call__(self, func):
+        return self.decorator
+
+
 def typespace(space_def):
     if not hasattr(space_def, 'funcs'):
         space_def.funcs = defaultdict(list)
@@ -104,7 +125,8 @@ def typespace(space_def):
 
     decorator.__name__ = space_def.__name__
 
-    for k in list(inspect.signature(space_def).parameters.keys()):
-        decorator.__dict__[k] = k
+    decorator.__dict__['types'] = list(inspect.signature(space_def).parameters.keys())
+    # for k in list(inspect.signature(space_def).parameters.keys()):
+    #     decorator.__dict__[k] = k
 
     return decorator

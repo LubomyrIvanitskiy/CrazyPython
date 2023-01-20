@@ -1,4 +1,4 @@
-from typespace import typespace
+from typespace import typespace, ContextDecorator
 
 
 @typespace
@@ -81,6 +81,22 @@ def tst2_polymorphism():
     foo(10)
 
 
+with ContextDecorator(MathSpace) as (Number,
+                                     Positive,
+                                     Negative,
+                                     Odd,
+                                     Even,
+                                     NonZero,
+                                     Degree):
+    def g(x: Positive):
+        pass
+
+
+def tst3_context():
+    g(-10)
+
+
 if __name__ == '__main__':
-    tst1()
-    tst2_polymorphism()
+    # tst1()
+    # tst2_polymorphism()
+    tst3_context()
