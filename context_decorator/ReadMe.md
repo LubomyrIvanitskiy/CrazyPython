@@ -1,0 +1,1 @@
+Using context manager to decorate functions inside
