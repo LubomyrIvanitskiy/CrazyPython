@@ -1,132 +1,129 @@
-import ast
 import inspect
-import builtins
-import sys
+from functools import lru_cache, wraps
 from collections import defaultdict
-from itertools import product
-
-import astor
 
 
-def _find_expressions(var_names, func, level=None):
-    if level is None:
-        level = 0
-    expressions = {}
-    inputs = set()
-    tree = ast.parse(inspect.getsource(func))
-    for node in ast.walk(tree):
-        if isinstance(node, ast.Assign):
-            target_names = [target.id for target in node.targets if isinstance(target, ast.Name)]
-            for var_name in var_names:
-                if var_name in target_names:
-                    expressions[var_name] = (level, astor.to_source(node.value).strip('\n\r\t '))
-                    for dep in ast.walk(node.value):
-                        if isinstance(dep, ast.Name) and dep.id != var_name:
-                            inps, exprs = _find_expressions([dep.id], func, level + 1)
-                            expressions.update(exprs)
-                            inputs.update(inps)
-    for var_name in var_names:
-        if var_name not in expressions:
-            inputs.add(var_name)
-
-    return inputs, expressions
+# IN: assert_arguments
+@lru_cache
+def _get_signature(func):
+    return inspect.signature(func)
 
 
-def find_expressions(var_names, func):
-    inps, exprs = _find_expressions(var_names, func)
-    return inps, _sort_expressions(exprs)
+def assert_arguments(func, *args, **kwargs):
+    arguments = _get_signature(func).bind(*args, **kwargs).arguments
+    for name, annotation in func.__annotations__.items():
+        traverse(annotation, arguments[name])
 
 
-def _sort_expressions(expressions):
-    return [f'{e[0]}={e[1][1]}' for e in sorted(expressions.items(), key=lambda item: item[1][0], reverse=True)]
+def assert_failed(func, *args, **kwargs):
+    try:
+        func(*args, **kwargs)
+    except AssertionError:
+        pass
+    else:
+        raise AssertionError(f"An assertion for {func} is expected to be raised")
 
 
-def find_assert_variables(func):
-    asserts = list()
-    tree = ast.parse(inspect.getsource(func))
-    for node in ast.walk(tree):
-        if isinstance(node, ast.Assert):
-            assert_vars = set()
-            for dep in ast.walk(node.test):
-                if isinstance(dep, ast.Name) and dep.id not in vars(builtins):
-                    assert_vars.add(dep.id)
-            expr = astor.to_source(node.test).strip(' \n\t\r')
-            asserts.append(
-                ('assert ' + expr + (f", '{node.msg.value}'" if node.msg else f", '{expr}'"), assert_vars))
-    return asserts
+def traverse(target, *args, **kwargs):
+
+    if target is ...:
+        return None
+    if isinstance(target, type):
+        assert isinstance(args[0], target), f'{target.__name__}\'s argument should be of type {target}'
+        return target
+
+    if not callable(target):
+        assert target == args[0]
+        return target
+    else:
+        assert_arguments(target, *args, **kwargs)
+        return target(*args, **kwargs)
 
 
-def validate(init_expressions, assert_expression, kwargs):
-    for e in init_expressions + [assert_expression]:
-        if not e.endswith('='):
-            exec(e, globals(), kwargs)
+def overload(func):
+    if 'overloads' not in overload.__dict__:
+        overload.overloads = defaultdict(list)
+    overload.overloads[func.__name__].append(func)
+
+    def wrapper(*args, **kwargs):
+        for f in overload.overloads[func.__name__]:
+            try:
+                assert_arguments(f, *args, **kwargs)
+                return f(*args, **kwargs)
+            except AssertionError:
+                pass
+        else:
+            raise AssertionError(f"No function overload found for {func}")
+
+    return wrapper
 
 
-class ContextDecorator:
+def typed(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        return traverse(func, *args, **kwargs)
 
-    def __init__(self, decorator):
-        self.decorator = decorator
+    return wrapper
 
-    def __enter__(self):
-        self.enter_locals = dict(**sys._getframe(0).f_back.f_locals)
-        return self.decorator.types
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        exit_locals = sys._getframe(0).f_back.f_locals
-        new_funcs = set(f for f in exit_locals if f not in self.enter_locals if inspect.isfunction(exit_locals[f]))
-        exit_locals.update({
-            f_name: self.decorator(exit_locals[f_name]) for f_name in new_funcs
-        })
-
-    def __call__(self, func):
-        return self.decorator
+    # ------------------- HELPERS ---------------------
 
 
-def typespace(space_def):
-    if not hasattr(space_def, 'funcs'):
-        space_def.funcs = defaultdict(list)
+def And(*funcs):
+    def wrapper(*args, **kwargs):
+        tuple(traverse(fun, *args, **kwargs) for fun in funcs)
 
-    assertions = []
-    asserts = find_assert_variables(space_def)
-    for a_expr, a_vars in asserts:
-        inputs, assert_expressions = find_expressions(a_vars, space_def)
-        assertions.append((a_expr, inputs, assert_expressions))
+    return wrapper
 
-    def decorator(func):
-        sig = inspect.signature(func)
-        inv_annotations = defaultdict(list)
-        for name, annotation in func.__annotations__.items():
-            for a_i in annotation.split(' '):
-                inv_annotations[a_i].append(name)
 
-        def header(*args, **kwargs):
-            arguments = sig.bind(*args, **kwargs).arguments
-            for assertion, inputs, init_expressions in assertions:
-                if any(v not in inv_annotations for v in inputs):
-                    continue
-                for prod in product(*(inv_annotations[k] for k in inputs)):
-                    kwarg = {annotation: arguments[var_name] for annotation, var_name in zip(inputs, prod)}
-                    try:
-                        validate(init_expressions, assertion, kwarg)
-                    except AssertionError as e:
-                        return e
-            return None
+def Or(*funcs):
+    def wrapper(*args, **kwargs):
+        for fun in funcs:
+            try:
+                traverse(fun, *args, **kwargs)
+                break
+            except AssertionError:
+                pass
+        else:
+            raise AssertionError(f'All precomputes failed for Or({funcs})')
 
-        space_def.funcs[func.__name__].append((header, func))
+    return wrapper
 
-        def wrapper(*args, **kwargs):
-            for head, fun in space_def.funcs[func.__name__]:
-                error = head(*args, **kwargs)
-                if error is None:
-                    return fun(*args, **kwargs)
-            raise error
 
-        return wrapper
+def Xor(*funcs):
+    def wrapper(*args, **kwargs):
+        success_count = 0
+        for fun in funcs:
+            try:
+                traverse(fun, *args, **kwargs)
+                success_count += 1
+            except AssertionError:
+                pass
 
-    decorator.__name__ = space_def.__name__
+        assert success_count == 1, f'Only single type-function from {funcs} should success'
 
-    decorator.__dict__['types'] = list(inspect.signature(space_def).parameters.keys())
-    # for k in list(inspect.signature(space_def).parameters.keys()):
-    #     decorator.__dict__[k] = k
+    return wrapper
 
-    return decorator
+
+def Not(fun):
+    def wrapper(*args, **kwargs):
+        assert_failed(traverse, fun, *args, **kwargs)
+
+    return wrapper
+
+
+def Collection(*margs, **mkwargs):
+    def wrapper(obj):
+        for aarg, marg in zip(obj, margs):
+            traverse(marg, aarg)
+        for m in mkwargs:
+            traverse(mkwargs[m], obj[m])
+
+    return wrapper
+
+
+def Object(**members):
+    def wrapper(obj):
+        for m in members:
+            traverse(members[m], getattr(obj, m))
+
+    return wrapper

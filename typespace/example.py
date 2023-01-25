@@ -1,102 +1,56 @@
-from typespace import typespace, ContextDecorator
+from typespace import assert_failed, typed, Object, Or, Collection, overload
+from typespace.predefined import Number, Positive, NonZero, Email, CamelStyled
 
 
-@typespace
-def MathSpace(
-        Number,
-        Positive,
-        Negative,
-        Odd,
-        Even,
-        NonZero,
-        Degree
-):
-    assert (isinstance(Number, int) or isinstance(Number, float))
-    assert Positive > 0
-    assert Negative < 0
-    assert Odd % 2 == 1
-    assert Even % 2 == 0
-    assert NonZero != 0
-    assert 0 <= Degree <= 360
+# ------- Math --------------
+@typed
+def square(x: Number):
+    return x ** 2
 
 
-@MathSpace
-def square(x: 'Number'):
-    pass
+@typed
+def sqrt(x: Positive):
+    return x ** 0.5
 
 
-@MathSpace
-def sqrt(x: 'Positive Number'):
-    pass
+@typed
+def div(a: Number, b: NonZero):
+    return a / b
 
 
-@MathSpace
-def div(x: 'Number', y: 'NonZero Number'):
-    pass
+# ------------- Math Tests --------------
+
+assert square(-3) == 9
+
+assert_failed(sqrt, -9)
+
+assert div(8, 4) == 2
+
+assert_failed(div, 8, 0)
 
 
-@MathSpace
-def cos(x: 'Degree Number'):
-    pass
+# -----------------------------------------
+# ------------ Overload -------------------
+
+def Google(email: Email):
+    assert email.endswith('gmail.com')
 
 
-def tst1():
-    try:
-        square(19)
-        print('square(19) - No Errors')
-    except AssertionError as e:
-        print("square(19) Error", e)
-
-    try:
-        sqrt(-20)
-        print('sqrt(-20) - No Errors')
-    except AssertionError as e:
-        print("sqrt(-20) Error", e)
-
-    try:
-        div(20, 0)
-        print('div(20, 0) - No Errors')
-    except AssertionError as e:
-        print("div(20, 0) Error", e)
-
-    try:
-        cos(410)
-        print('cos(410) - No Errors')
-    except AssertionError as e:
-        print("cos(410) Error", e)
+def Yahoo(email: Email):
+    assert email.endswith('yahoo.com')
 
 
-@MathSpace
-def foo(x: 'Positive Number'):
-    print("I am positive foo")
+@overload
+def send_greetings(mail: Yahoo):
+    return "Sending to Yahoo user"
 
 
-@MathSpace
-def foo(x: 'Negative Number'):
-    print("I am negative foo")
+@overload
+def send_greetings(mail: Google):
+    return "Sending to Google user"
 
 
-def tst2_polymorphism():
-    foo(-30)
-    foo(10)
-
-
-with ContextDecorator(MathSpace) as (Number,
-                                     Positive,
-                                     Negative,
-                                     Odd,
-                                     Even,
-                                     NonZero,
-                                     Degree):
-    def g(x: Positive):
-        pass
-
-
-def tst3_context():
-    g(-10)
-
-
-if __name__ == '__main__':
-    # tst1()
-    # tst2_polymorphism()
-    tst3_context()
+# ------------- Overloading Tests --------------
+assert send_greetings("user@gmail.com") == "Sending to Google user"
+assert send_greetings("user@yahoo.com") == "Sending to Yahoo user"
+assert_failed(send_greetings, 'user@unknownmail.com')
