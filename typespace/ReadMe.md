@@ -70,7 +70,7 @@ def do_something(arr=Collection(Positive, 2, ..., Odd)):
 In this case do something will accept the only 4-length collections that has first element positive, second element
 equals two, third element - any object and fourth element an Odd number
 
-For more examples see `predefined.py` and `example.py`
+For more examples see `predefined.py` how to build custom type-test-functions
 
 ```python
 import re
@@ -179,6 +179,7 @@ def Interval(start_end: Object(x=Number, y=Number)):
 
 ```
 
+or `example.py` - example of usage
 ```python
 from typespace import assert_failed, typed, Object, Or, Collection, overload
 from typespace.predefined import Number, Positive, NonZero, Email, CamelStyled
