@@ -12,7 +12,13 @@ def _get_signature(func):
 def assert_arguments(func, *args, **kwargs):
     arguments = _get_signature(func).bind(*args, **kwargs).arguments
     for name, annotation in func.__annotations__.items():
-        traverse(annotation, arguments[name])
+        if name != 'return':
+            traverse(annotation, arguments[name], __param_name=name)
+
+
+def assert_output(func, output):
+    if 'return' in func.__annotations__:
+        traverse(func.__annotations__['return'], output, __param_name='return')
 
 
 def assert_failed(func, *args, **kwargs):
@@ -24,12 +30,12 @@ def assert_failed(func, *args, **kwargs):
         raise AssertionError(f"An assertion for {func} is expected to be raised")
 
 
-def traverse(target, *args, **kwargs):
-
+def traverse(target, *args, __param_name=None, **kwargs):
     if target is ...:
         return None
     if isinstance(target, type):
-        assert isinstance(args[0], target), f'{target.__name__}\'s argument should be of type {target}'
+        assert isinstance(args[0],
+                          target), f'{__param_name if __param_name is not None else args[0].__class__.__name__}\'s should be of type {target}'
         return target
 
     if not callable(target):
@@ -37,7 +43,9 @@ def traverse(target, *args, **kwargs):
         return target
     else:
         assert_arguments(target, *args, **kwargs)
-        return target(*args, **kwargs)
+        result = target(*args, **kwargs)
+        assert_output(target, result)
+        return result
 
 
 def overload(func):
@@ -113,10 +121,10 @@ def Not(fun):
 
 def Collection(*margs, **mkwargs):
     def wrapper(obj):
-        for aarg, marg in zip(obj, margs):
-            traverse(marg, aarg)
+        for i, aarg, marg in enumerate(zip(obj, margs)):
+            traverse(marg, aarg, __param_name=i)
         for m in mkwargs:
-            traverse(mkwargs[m], obj[m])
+            traverse(mkwargs[m], obj[m], __param_name=m)
 
     return wrapper
 
@@ -124,6 +132,6 @@ def Collection(*margs, **mkwargs):
 def Object(**members):
     def wrapper(obj):
         for m in members:
-            traverse(members[m], getattr(obj, m))
+            traverse(members[m], getattr(obj, m), __param_name=m)
 
     return wrapper

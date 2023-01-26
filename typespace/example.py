@@ -54,3 +54,14 @@ def send_greetings(mail: Google):
 assert send_greetings("user@gmail.com") == "Sending to Google user"
 assert send_greetings("user@yahoo.com") == "Sending to Yahoo user"
 assert_failed(send_greetings, 'user@unknownmail.com')
+
+
+# - --------------- Test return type --------
+# TODO not sure this functionality is needed
+
+@typed
+def foo(x: int) -> str:
+    return x
+
+
+assert_failed(foo, 9)
