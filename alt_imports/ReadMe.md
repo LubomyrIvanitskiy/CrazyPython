@@ -38,3 +38,5 @@ So, the same function, for example, may be imported in different ways:
 3. from tags.utils.string import validate_number
 
 Feel free to contribute and/or open issues!
+
+**NOTE**: You will need to create a __manifest__.py file where all modules that use tags decorator should be put in order to make it working
