@@ -27,4 +27,4 @@ print("this", this)             # will throw the exception like "No attribute 't
 
 ```
 
-Enjoy, and Stands With Ukraine!
+Enjoy, and Stand With Ukraine!
