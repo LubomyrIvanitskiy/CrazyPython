@@ -2,6 +2,8 @@ import inspect
 from functools import lru_cache, wraps
 from collections import defaultdict
 
+ENABLED = False
+
 
 # IN: assert_arguments
 @lru_cache
@@ -49,6 +51,8 @@ def traverse(target, *args, __param_name=None, **kwargs):
 
 
 def overload(func):
+    if not ENABLED:
+        return func
     if 'overloads' not in overload.__dict__:
         overload.overloads = defaultdict(list)
     overload.overloads[func.__name__].append(func)
@@ -67,6 +71,9 @@ def overload(func):
 
 
 def typed(func):
+    if not ENABLED:
+        return func
+
     @wraps(func)
     def wrapper(*args, **kwargs):
         return traverse(func, *args, **kwargs)
@@ -135,3 +142,10 @@ def Object(**members):
             traverse(members[m], getattr(obj, m), __param_name=m)
 
     return wrapper
+
+
+def configure(
+        enabled: bool = ENABLED
+):
+    global ENABLED
+    ENABLED = enabled
