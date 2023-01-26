@@ -16,43 +16,33 @@ Using `@inner_decorator` you can wrap each function that is used inside the "mot
 examples:
 
 ```python
->> >
 
 def f1():
+    return 1
 
-
-    ...
-return 1
-...
-
->> >
 
 def mother():
+    print(f1() + f1())
 
 
-    ...
-print(f1() + f1())
-...
-
->> > mother()
-2
+mother()  # Output: 2
 ```
 
 Now let's wrap the f1 with some decorator
 
 ```python
->> >
 
-def new_f1():
+def f1_wrapper(original_f1):
+    def wrapper(*args, **kwargs):
+        return original_f1(*args, **kwargs) + 1
+
+    return wrapper
 
 
-    ...
-return 2
+from inner_decorator import inner_decorator
 
->> > from inner_decorator import inner_decorator
->> > mother = inner_decorator(f1=lambda f: new_f1())(mother)
->> > mother()
-4
+mother = inner_decorator(f1=f1_wrapper)(mother)
+mother()  # Output: 4
 ```
 
 For sure instead of running `mother = inner_decorator(f1=lambda f: new_f1())(mother)` you can use @inner_decorator
