@@ -1,5 +1,7 @@
-from typespace import assert_failed, typed, Object, Or, Collection, overload
+from typespace import assert_failed, typed, Object, Or, Collection, overload, configure as typespace_config
 from typespace.predefined import Number, Positive, NonZero, Email, CamelStyled
+
+typespace_config(enabled=True)  # DO NOT FORGET TO DISABLE IT FOR PRODUCTION
 
 
 # ------- Math --------------
