@@ -4,7 +4,7 @@ Run
 python setup.py sdist
 pip install sdist/CrazyPython-0.0.0.tar.gz
 ```
-Add empty `__manifest__.py` file to your root project dir
+# Add an empty `__manifest__.py` file to your root project dir
 ```python
 # Module1
 >>> from tags import tag
@@ -21,7 +21,7 @@ Add empty `__manifest__.py` file to your root project dir
 ...    return a-b
 ...
 
-Add imports of all modules that used `tag` decorator to `__manifest__.py' like:
+# Add imports of all modules that used `tag` decorator to `__manifest__.py' like:
 
 #__manifest__.py
 ... import some_module1
