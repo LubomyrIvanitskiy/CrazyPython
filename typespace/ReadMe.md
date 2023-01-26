@@ -22,7 +22,11 @@ You can then use the `@typespace.typed` decorator to annotate the function argum
 type-test-function.
 
 ```python
-@typespace.typed
+from typespace import typed, overload
+```
+
+```python
+@typed
 def my_function(arg1: my_type_test_function, arg2: my_type_test_function):
 # function body
 ```
@@ -31,12 +35,12 @@ Also, you can use the `@typespace.overload` decorator to define multiple version
 types.
 
 ```python
-@typespace.overload
+@overload
 def my_function(arg1: my_type_test_function):
     pass
 
 
-@typespace.overload
+@overload
 def my_function(arg1: another_type_test_function):
     pass
 ```
@@ -238,6 +242,16 @@ assert send_greetings("user@gmail.com") == "Sending to Google user"
 assert send_greetings("user@yahoo.com") == "Sending to Yahoo user"
 assert_failed(send_greetings, 'user@unknownmail.com')
 ```
+
+Also you can play it around and use it like:
+
+```python
+def foo(x: print, y: lambda y_: print(f'foo is called with y={y_})):
+  pass
+```
+
+In general feel free to experiments and let me know your feedback
+
 
 # Note
 It's important to keep in mind that this library is using assert statement to check the types of arguments passed to a function. If the assertion fails, an AssertionError is raised, this will stop the execution of the program.
