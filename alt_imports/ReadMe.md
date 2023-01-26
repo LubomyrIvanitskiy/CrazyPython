@@ -4,11 +4,11 @@ Run
 python setup.py sdist
 pip install sdist/CrazyPython-0.0.0.tar.gz
 ```
-```
-# Add an empty `__manifest__.py` file to your root project dir
-```
+
 
 ```python
+# First add an empty `__manifest__.py` file to your root project dir
+
 # Module1
 >>> from tags import tag
 ...
@@ -30,7 +30,7 @@ pip install sdist/CrazyPython-0.0.0.tar.gz
 ... import some_module1
 ... import some_module2
 
-Now you can youse you alt imports!
+# Now you can youse you alt imports!
 
 >>> from tags.math import *
 >>> add(2,2)
