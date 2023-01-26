@@ -4,7 +4,10 @@ Run
 python setup.py sdist
 pip install sdist/CrazyPython-0.0.0.tar.gz
 ```
+```
 # Add an empty `__manifest__.py` file to your root project dir
+```
+
 ```python
 # Module1
 >>> from tags import tag
