@@ -31,6 +31,9 @@ assert div(8, 4) == 2
 assert_failed(div, 8, 0)
 
 
+# -------------
+
+
 # -----------------------------------------
 # ------------ Overload -------------------
 
@@ -67,3 +70,14 @@ def foo(x: int) -> str:
 
 
 assert_failed(foo, 9)
+
+
+# ------------ Use boolean functions as types
+
+@typed
+def send(x: str.isdigit):
+    return int(x)
+
+
+assert send('13341434') == 13341434
+assert_failed(send, '13341434L')

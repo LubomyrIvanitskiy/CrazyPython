@@ -15,7 +15,8 @@ def assert_arguments(func, *args, **kwargs):
     arguments = _get_signature(func).bind(*args, **kwargs).arguments
     for name, annotation in func.__annotations__.items():
         if name != 'return':
-            traverse(annotation, arguments[name], __param_name=name)
+            result = traverse(annotation, arguments[name], __param_name=name)
+            assert result is not False, f"Result for {func.__name__} is {result}"
 
 
 def assert_output(func, output):
@@ -25,7 +26,8 @@ def assert_output(func, output):
 
 def assert_failed(func, *args, **kwargs):
     try:
-        func(*args, **kwargs)
+        result = func(*args, **kwargs)
+        assert result is False
     except AssertionError:
         pass
     else:
@@ -43,11 +45,14 @@ def traverse(target, *args, __param_name=None, **kwargs):
     if not callable(target):
         assert target == args[0]
         return target
-    else:
+    elif hasattr(target, '__annotations__'):
         assert_arguments(target, *args, **kwargs)
         result = target(*args, **kwargs)
         assert_output(target, result)
         return result
+    else:
+        return target(*args, **kwargs)
+
 
 
 def overload(func):
