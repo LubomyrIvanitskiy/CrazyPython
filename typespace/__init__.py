@@ -54,7 +54,6 @@ def traverse(target, *args, __param_name=None, **kwargs):
         return target(*args, **kwargs)
 
 
-
 def overload(func):
     if not ENABLED:
         return func
@@ -127,6 +126,13 @@ def Xor(*funcs):
 def Not(fun):
     def wrapper(*args, **kwargs):
         assert_failed(traverse, fun, *args, **kwargs)
+
+    return wrapper
+
+
+def Eq(fun):
+    def wrapper(arg):
+        assert fun == arg
 
     return wrapper
 
