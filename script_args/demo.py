@@ -2,7 +2,7 @@ from script_args import entrypoint, launch
 
 
 @entrypoint
-def hello(arg):
+def hello(arg: str):
     print('Hello, world!', arg)
 
 
@@ -12,4 +12,4 @@ def bye():
 
 
 if __name__ == '__main__':
-    launch()
+    launch(globals())
