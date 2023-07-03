@@ -1,37 +1,33 @@
-from types import FunctionType
-
-from function_caller_scope import accessed_by
+from function_tree import accessed_by
 
 
-def f():
-    print(x)
-    f2()
+def build_model():
+    build_autoencoder()
+    build_classifier()
+    ...
 
 
-with accessed_by(f):
-    x = 10 + 12
+with accessed_by(build_model):
+    def build_autoencoder():
+        encoder = build_encoder()
+        decoder = build_decoder()
 
 
-    def f1():
-        print("f1 x", x)
+    with accessed_by(build_autoencoder):
+        def build_encoder():
+            pass
 
 
-    def f2():
-        print("f2 y", y)
-        f2_1()
+        def build_decoder():
+            pass
 
 
-    with accessed_by(f2):
-        y = 100
+    def build_classifier():
+        encoder = build_encoder()
+        mlp = build_mlp()
+        ...
 
-        def f2_1():
-            print("f2_1 y", x)
 
-f()
-#
-# for g in dict(**globals()):
-#     if isinstance(globals()[g], FunctionType):
-#         if '__accessors__' not in globals()[g].__dict__:
-#             print(g, 'has no accessors')
-#         else:
-#             print(g, globals()[g].__accessors__)
+    with accessed_by(build_classifier):
+        def build_mlp():
+            pass
