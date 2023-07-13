@@ -2,6 +2,7 @@ import logging
 
 LITERAL_TAG = '!literal'
 OPTIONAL_TAG = '!optional'
+FROM_TAG = '!from'
 
 
 def split_index(key):
@@ -69,6 +70,10 @@ def mapper(source, mapping, indexes=None):
     if isinstance(mapping, dict):
         result = {}
         for k, v in mapping.items():
+            if k.startswith(FROM_TAG):
+                get_from = get(source, k[len(FROM_TAG):].strip(), indexes=indexes)
+                result.update(mapper(get_from, v, indexes))
+                continue
             key, index = split_index(k)
             if index is not None:
                 for item in iterate_by_index(source, v, index, indexes):

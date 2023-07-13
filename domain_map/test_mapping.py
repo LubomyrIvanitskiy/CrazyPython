@@ -228,3 +228,26 @@ def test_multiindex():
     }
 
     assert mapper(data, mapping) == expected_result
+
+
+def test_from_tag():
+    data = {
+        "user": {
+            "name": "John Doe",
+            "age": 30,
+        }
+    }
+
+    mapping = {
+        "!from user": {
+            "name": "name",
+            "age": "age"
+        }
+    }
+
+    expected_result = {
+        "name": "John Doe",
+        "age": 30,
+    }
+
+    assert mapper(data, mapping) == expected_result
