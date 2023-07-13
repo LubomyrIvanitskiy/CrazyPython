@@ -1,4 +1,7 @@
+import logging
+
 LITERAL_TAG = '!literal'
+OPTIONAL_TAG = '!optional'
 
 
 def split_index(key):
@@ -78,7 +81,17 @@ def mapper(source, mapping, indexes=None):
                         # FEATURE: Handling Literal
                         result[k] = v[len(LITERAL_TAG):].strip()
                     else:
-                        result[k] = get(source, v, indexes=indexes)
+                        optional = False
+                        if k.startswith(OPTIONAL_TAG):
+                            k = k[len(OPTIONAL_TAG):]
+                            optional = True
+                        try:
+                            result[k] = get(source, v, indexes=indexes)
+                        except KeyError as e:
+                            if not optional:
+                                raise e
+                            else:
+                                logging.debug(f'WARNING: {e}')
                 else:
                     # FEATURE: Handling Literal
                     result[k] = v

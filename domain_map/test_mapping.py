@@ -17,6 +17,21 @@ def test_handling_literal():
     assert mapper(data, mapping) == expected_result
 
 
+def test_handling_optional():
+    data = {}
+
+    mapping = {
+        "!optional version": "data.version",
+        "count": 1
+    }
+
+    expected_result = {
+        "count": 1
+    }
+
+    assert mapper(data, mapping) == expected_result
+
+
 def test_handling_path():
     data = {
         "user": {
