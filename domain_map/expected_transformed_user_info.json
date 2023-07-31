@@ -1,0 +1,42 @@
+{
+  "id": 12345,
+  "personal_info": {
+    "name": "John Doe",
+    "dob": "1985-03-25",
+    "contacts": {
+      "email": "johndoe23@example.com",
+      "phone": "+1234567890"
+    }
+  },
+  "login_info": {
+    "username": "johndoe23"
+  },
+  "addresses": [
+    {
+      "type": "home",
+      "details": {
+        "street": "1234 Elm Street",
+        "city": "Springfield",
+        "state": "Unknown",
+        "zip": "12345",
+        "country": "USA"
+      }
+    },
+    {
+      "type": "work",
+      "details": {
+        "street": "5678 Oak Avenue",
+        "city": "Shelbyville",
+        "state": "Unknown",
+        "zip": "67890",
+        "country": "USA"
+      }
+    }
+  ],
+  "membership": {
+    "status": "active",
+    "level": "premium",
+    "start_date": "2021-01-01",
+    "end_date": "2024-01-01"
+  }
+}

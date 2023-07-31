@@ -1,0 +1,35 @@
+{
+  "user": {
+    "id": 12345,
+    "name": {
+      "first": "John",
+      "last": "Doe"
+    },
+    "username": "johndoe23",
+    "email": "johndoe23@example.com",
+    "phone": "+1234567890",
+    "address": {
+      "home": {
+        "street": "1234 Elm Street",
+        "city": "Springfield",
+        "state": "Unknown",
+        "zip": "12345",
+        "country": "USA"
+      },
+      "work": {
+        "street": "5678 Oak Avenue",
+        "city": "Shelbyville",
+        "state": "Unknown",
+        "zip": "67890",
+        "country": "USA"
+      }
+    },
+    "dateOfBirth": "1985-03-25",
+    "membership": {
+      "status": "active",
+      "type": "premium",
+      "start": "2021-01-01",
+      "end": "2024-01-01"
+    }
+  }
+}

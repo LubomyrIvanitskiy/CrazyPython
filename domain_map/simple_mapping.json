@@ -1,0 +1,30 @@
+{
+    "id": "user.id",
+    "personal_info": {
+        "name": "!concat user.name.first user.name.last",
+        "dob": "user.dateOfBirth",
+        "contacts": {
+            "email": "user.email",
+            "phone": "user.phone"
+        }
+    },
+    "login_info": {
+        "username": "user.username"
+    },
+    "addresses": [
+        {
+            "type": "home",
+            "details": "user.address.home"
+        },
+        {
+            "type": "work",
+            "details": "user.address.work"
+        }
+    ],
+    "membership": {
+        "status": "user.membership.status",
+        "level": "user.membership.type",
+        "start_date": "user.membership.start",
+        "end_date": "user.membership.end"
+    }
+}

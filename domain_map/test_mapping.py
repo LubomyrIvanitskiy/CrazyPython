@@ -1,4 +1,7 @@
-from domain_map import mapper
+import json
+import os
+
+from domain_map import mapper, read_mapping
 
 
 def test_handling_literal():
@@ -14,7 +17,7 @@ def test_handling_literal():
         "count": 1
     }
 
-    assert mapper(data, mapping) == expected_result
+    assert mapper(data, mapping=mapping) == expected_result
 
 
 def test_handling_optional():
@@ -29,7 +32,7 @@ def test_handling_optional():
         "count": 1
     }
 
-    assert mapper(data, mapping) == expected_result
+    assert mapper(data, mapping=mapping) == expected_result
 
 
 def test_handling_path():
@@ -50,7 +53,7 @@ def test_handling_path():
         "age": 30,
     }
 
-    assert mapper(data, mapping) == expected_result
+    assert mapper(data, mapping=mapping) == expected_result
 
 
 def test_accessing_list_element():
@@ -80,7 +83,7 @@ def test_accessing_list_element():
             "age": 25,
         }
     }
-    assert mapper(data, mapping) == expected_result
+    assert mapper(data, mapping=mapping) == expected_result
 
 
 def test_defining_list():
@@ -114,7 +117,7 @@ def test_defining_list():
         ]
     }
 
-    assert mapper(data, mapping) == expected_result
+    assert mapper(data, mapping=mapping) == expected_result
 
 
 def test_defining_nested_list():
@@ -177,7 +180,7 @@ def test_defining_nested_list():
         ]
     }
 
-    assert mapper(data, mapping) == expected_result
+    assert mapper(data, mapping=mapping) == expected_result
 
 
 def test_multiindex():
@@ -227,7 +230,7 @@ def test_multiindex():
         ]
     }
 
-    assert mapper(data, mapping) == expected_result
+    assert mapper(data, mapping=mapping) == expected_result
 
 
 def test_from_tag():
@@ -235,19 +238,54 @@ def test_from_tag():
         "user": {
             "name": "John Doe",
             "age": 30,
+            "address": {
+                "city": "New York",
+                "country": "USA"
+            }
         }
     }
 
     mapping = {
         "!from user": {
             "name": "name",
-            "age": "age"
+            "age": "age",
+            "!from address": {
+                "city": "city",
+            }
         }
     }
 
     expected_result = {
         "name": "John Doe",
         "age": 30,
+        "city": "New York"
     }
 
-    assert mapper(data, mapping) == expected_result
+    assert mapper(data, mapping=mapping) == expected_result
+
+
+def test_loading_from_simple_yaml():
+    from trace_all import trace_on, trace_off
+    try:
+        trace_on()
+        maps = read_mapping('simple_mapping.json')
+        print(json.dumps(maps, indent=2))
+        assert maps
+        data = json.load(open("original_user_info.json"))
+        result = mapper(data, mapping=maps, concat=lambda *args: ' '.join(args))
+        print(json.dumps(result, indent=2))
+        assert result
+    finally:
+        trace_off()
+
+# def test_loading_from_simple_yaml():
+#     maps = read_mapping('simple_mapping.yaml')
+#     assert maps
+#     data = json.load(open("original_user_info.json"))
+#     result = mapper(data, mapping=maps, concat=lambda *args: ' '.join(args))
+#     assert result
+#
+#
+# def test_loading_from_advanced_yaml():
+#     maps = read_mapping('advanced_mapping.yaml')
+#     assert maps
