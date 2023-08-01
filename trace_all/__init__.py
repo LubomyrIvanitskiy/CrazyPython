@@ -91,7 +91,7 @@ def trace_on(home=os.getcwd(), include_privates=False, include_builtins=False, i
         numbers = [prev_line_no]
         for n, c, v in zip_longest(numbers, code_text_lines, vars_lines, fillvalue=' '):
             color_c = highlight(c, PythonLexer(), TerminalFormatter(bg='dark')).rstrip() if c != ' ' else ' '
-            color_vars = highlight(v, PythonLexer(), TerminalFormatter(bg='dark')).rstrip() if c != ' ' else ' '
+            color_vars = highlight(v, PythonLexer(), TerminalFormatter(bg='dark')).rstrip() if v != ' ' else ' '
             lines.append(f'{n:<6} {color_c:<{CODE_WIDTH - len(c) + len(color_c)}} # {color_vars:<{VARS_WIDTH-len(v)+len(color_vars)}}')
 
         if prev_line_no - pprev_line_no > 1:
