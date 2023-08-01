@@ -56,18 +56,20 @@ VARS_WIDTH = 200
 
 def trace_on(home=os.getcwd(), include_privates=False, include_builtins=False, include_libs=False):
     def trace_lines(frame, event, arg):
-        if 'scopes' not in trace_lines.__dict__:
-            trace_lines.scopes = [{}]
-        if 'prev_line' not in trace_lines.__dict__:
-            trace_lines.prev_line = '', 0, 0, ''
         co = frame.f_code
         file_name = co.co_filename
+        line_no = frame.f_lineno
+
+        if 'scopes' not in trace_lines.__dict__:
+            trace_lines.scopes = [{}]
+            print(f'\nStart Tracing File "{os.path.relpath(file_name)}", line {line_no}')
+        if 'prev_line' not in trace_lines.__dict__:
+            trace_lines.prev_line = '', 0, 0, ''
         if not include_libs:
             if not file_name.startswith(home) or ('<' in file_name) or ('site-packages' in file_name):
                 return trace_lines
 
         func_name = co.co_name
-        line_no = frame.f_lineno
         line = linecache.getline(file_name, line_no).strip('\n')
 
         if event == 'call':

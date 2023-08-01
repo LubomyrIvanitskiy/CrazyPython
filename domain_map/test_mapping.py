@@ -264,7 +264,7 @@ def test_from_tag():
     assert mapper(data, mapping=mapping) == expected_result
 
 
-def test_loading_from_simple_yaml():
+def test_loading_from_simple_json():
     from trace_all import trace_on, trace_off
     try:
         trace_on()
