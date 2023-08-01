@@ -128,15 +128,21 @@ def trace_on(
                 print(f'\n>> Start Tracing File "{os.path.relpath(file_name)}", line {line_no}')
         if 'prev_line' not in trace_lines.__dict__:
             trace_lines.prev_line = '', 0, 0, ''
+        if 'path' not in trace_lines.__dict__:
+            trace_lines.path = [f'{os.path.relpath(file_name)}:{func_name}']
 
         if event == 'call':
             trace_lines.reserv_prev_line = trace_lines.prev_line
             if is_target:
                 _show_line(trace_lines.prev_line, {}, background, code_width=code_size, vars_width=vars_size)
+                path = [*trace_lines.path, f'{os.path.relpath(file_name)}:{func_name}']
+                path[-1] = f'\033[1m{path[-1]}\033[0m'
+                path = ' ->\n##\t'.join(path)
                 print(
-                    f'{bound} \n>> \033[1m{trace_lines.prev_line[0]}() --> {func_name}()\033[0m: File "{os.path.relpath(file_name)}", line {line_no}')
+                    f'{bound}\n## CALLSTACK:\n##\t{path}() File "{os.path.relpath(file_name)}", line {line_no}\n')
             trace_lines.prev_line = func_name, trace_lines.prev_line[2], line_no, line
             trace_lines.scopes.append({})
+            trace_lines.path.append(f'{os.path.relpath(file_name)}:{func_name}')
             return trace_lines
 
         if not is_target:
@@ -156,6 +162,7 @@ def trace_on(
         if event == 'return':
             trace_lines.prev_line = trace_lines.reserv_prev_line
             trace_lines.scopes.pop()
+            trace_lines.path.pop()
             print(
                 f'>> \033[1m{trace_lines.prev_line[0]}() <-- {func_name}()\n>>{bound} \n>> [CONTINUE] {trace_lines.prev_line[0]}()\033[0m:')
 
