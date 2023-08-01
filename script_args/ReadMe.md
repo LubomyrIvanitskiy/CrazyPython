@@ -33,8 +33,8 @@ if __name__ == '__main__':
 Here, two commands (`hello` and `bye`) are defined, each with different arguments. You can call this script from the command line in the following ways:
 
 ```bash
-python myscript.py hello man
-python myscript.py bye
+python example.py hello man
+python example.py bye
 ```
 
 The first command will print `Hello, world! man` and the second one will print `Bye, world!`.
