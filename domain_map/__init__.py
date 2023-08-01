@@ -53,7 +53,8 @@ def handle_operands(result, operands, path, **kwargs):
                 elif isinstance(operation, FunctionType):
                     operation_result = operation(result)
                     if not operation_result:
-                        raise ValueError(f'Expected {operation} returns {operation_result} for {path}\'s operand {op_name}. Expected non-False result')
+                        raise ValueError(
+                            f'Expected {operation} returns {operation_result} for {path}\'s operand {op_name}. Expected non-False result')
             else:
                 raise ValueError(f'Unknown operand {op_name} for {path}')
     return result
@@ -67,7 +68,6 @@ def _split_operands(s):
         else:
             args.append(part)
     return operands, ' '.join(args)
-
 
 
 def get(source, path, sep='.', indexes=None, **kwargs):
@@ -169,6 +169,7 @@ def mapper(source, *, mapping=None, mapping_path: str = None, indexes=None, **kw
         result = get(source, mapping, indexes=indexes, **kwargs)
     return result
 
+
 def unknown_constructor(loader, tag_suffix, node):
     print(f"Handling {tag_suffix}")
     if isinstance(node, yaml.MappingNode):
@@ -178,6 +179,8 @@ def unknown_constructor(loader, tag_suffix, node):
     else:
         node.value = f'!{tag_suffix} {node.value}'
         return loader.construct_yaml_str(node)
+
+
 @lru_cache()
 def get_yaml():
     import yaml
