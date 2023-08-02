@@ -5,29 +5,8 @@ next_number = num2
 count = 1
 
 while count <= n:
-    print(next_number, end=" ")
+    print(next_number)
     count += 1
     num1, num2 = num2, next_number
     next_number = num1 + num2
 print()
-
-FibArray = [0, 1]
-
-
-def fibonacci(n):
-    # Check is n is less
-    # than 0
-    if n < 0:
-        print("Incorrect input")
-
-    # Check is n is less
-    # than len(FibArray)
-    elif n < len(FibArray):
-        return FibArray[n]
-    else:
-        FibArray.append(fibonacci(n - 1) + fibonacci(n - 2))
-        return FibArray[n]
-
-
-# Driver Program
-print(fibonacci(9))
