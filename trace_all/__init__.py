@@ -1,4 +1,4 @@
-from collections import defaultdict
+from collections import defaultdict, ChainMap
 from itertools import zip_longest
 import linecache
 import os
@@ -11,6 +11,92 @@ from pygments.formatters import TerminalFormatter
 import textwrap
 
 orig_trace = sys.gettrace()
+
+import tokenize
+import io
+
+
+def extract_nested_objects(code_str):
+    g = tokenize.tokenize(io.BytesIO(code_str.encode('utf-8')).readline)
+
+    nested_objects = []
+    current_object = ""
+
+    for tok in g:
+        if tok.type == tokenize.NAME:
+            if current_object:
+                if current_object.endswith('[') or current_object.endswith('.'):
+                    current_object += tok.string
+                else:
+                    nested_objects.append(current_object)
+                    current_object = tok.string
+            else:
+                current_object = tok.string
+
+        elif tok.type == tokenize.OP:
+            if tok.string == '.':
+                if current_object:
+                    current_object += tok.string
+
+            elif tok.string == '[':  # array index access begins
+                current_object += tok.string
+
+            elif tok.string == ']':  # array index access ends
+                current_object += tok.string
+
+            elif tok.string == ',':  # argument separator
+                if current_object:
+                    nested_objects.append(current_object)
+                    current_object = ""
+            elif tok.string == '(':  # end of function call or grouping
+                if current_object:
+                    nested_objects.append(current_object)
+                    current_object = ""
+
+            elif tok.string == ')':  # end of function call or grouping
+                if current_object:
+                    nested_objects.append(current_object)
+                    current_object = ""
+
+        elif tok.type == tokenize.NUMBER or tok.type == tokenize.STRING:
+            if current_object.endswith('['):  # inside array index access
+                current_object += tok.string
+
+    if current_object:
+        nested_objects.append(current_object)
+
+    return [ex for ex in nested_objects if '.' in ex or '[' in ex]
+
+
+def get_variables(code_line, line_no, frame_locals, frame_globals, frame_names, with_expressions=True):
+    # print("GET_TOKENS", code_line)
+    expressions = []
+    if 'previous' not in get_variables.__dict__:
+        get_variables.previous = None
+    try:
+        if get_variables.previous and get_variables.previous[0] == line_no - 1:
+            code_line = f'{get_variables.previous[1]}\n{code_line}'
+            print('MULTILINES', code_line)
+        else:
+            get_variables.previous = None
+        tokens = tokenize.tokenize(io.BytesIO(code_line.encode('utf-8')).readline)
+        names = {token.string for token in tokens if token.type == tokenize.NAME}
+        if with_expressions:
+            expressions = extract_nested_objects(code_line)
+
+    except tokenize.TokenError as e:
+        if get_variables.previous and get_variables.previous[0] == line_no - 1:
+            code_line = f'{get_variables.previous[1]}\n{code_line}'
+        get_variables.previous = (line_no, code_line)
+        return {}, []
+    locs_ = frame_locals
+    glob_chain = frame_globals  # ChainMap(frame_globals, __builtins__)
+    globs_ = {k: glob_chain[k] for k in frame_names if k in glob_chain}
+    context = ChainMap(locs_, globs_)
+    if with_expressions:
+        return {n: context[n] for n in names if n in context}, expressions
+    else:
+        return {n: context[n] for n in names if n in context}
 
 
 def deep_copy_dict(d):
@@ -104,6 +190,7 @@ def trace_on(
         include_builtins=False,
         include_libs=False,
         targets=None,
+        var_mode='used',  # diff, used, used+, all, none
         background: str = 'dark',
         code_size: int = CODE_WIDTH,
         vars_size: int = VARS_WIDTH):
@@ -152,10 +239,34 @@ def trace_on(
         if not include_privates:
             locs = ((k, v) for k, v in locs if not k.startswith('_'))
         if not include_builtins:
-            locs = ((k, v) for k, v in locs if not hasattr(v, '__module__') or (v.__module__ and not v.__module__.startswith('builtins')))
+            locs = ((k, v) for k, v in locs if
+                    not hasattr(v, '__module__') or (v.__module__ and not v.__module__.startswith('builtins')))
         locs = dict(locs)
-        diff = dict_diff(trace_lines.scopes[-1], locs)
-        _show_line(trace_lines.prev_line, diff, background, code_width=code_size, vars_width=vars_size)
+        var_dict = None
+        if var_mode == 'diff':
+            var_dict = dict_diff(trace_lines.scopes[-1], locs)
+        elif var_mode == 'all':
+            var_dict = locs
+        elif var_mode.startswith('used'):
+            with_expressions = var_mode.endswith('+')
+            if with_expressions:
+                var_dict, expressions = get_variables(trace_lines.prev_line[-1], trace_lines.prev_line[-2], locs,
+                                                      frame.f_globals, co.co_names, with_expressions=True)
+
+                if expressions:
+                    for exp in expressions:
+                        if exp not in var_dict:
+                            try:
+                                var_dict[exp] = eval(exp, frame.f_globals, frame.f_locals)
+                            except:
+                                pass
+
+            else:
+                var_dict = get_variables(trace_lines.prev_line[-1], trace_lines.prev_line[-2], locs,
+                                                      frame.f_globals, co.co_names)
+        elif var_mode == 'none':
+            var_dict = {}
+        _show_line(trace_lines.prev_line, var_dict, background, code_width=code_size, vars_width=vars_size)
         trace_lines.prev_line = func_name, trace_lines.prev_line[2], line_no, line  # f'{tab}{line_no}\t\t{line}'
         trace_lines.scopes[-1] = locs
 
@@ -183,6 +294,7 @@ class tracing:
                  include_builtins=False,
                  include_libs=False,
                  targets=None,
+                 var_mode='used',  # diff, used, all, none
                  background: str = 'dark',
                  code_size: int = CODE_WIDTH,
                  vars_size: int = VARS_WIDTH
@@ -192,6 +304,7 @@ class tracing:
         self.include_builtins = include_builtins
         self.include_libs = include_libs
         self.targets = targets
+        self.var_mode = var_mode
         self.background = background
         self.code_size = code_size
         self.vars_size = vars_size
@@ -203,6 +316,7 @@ class tracing:
             include_builtins=self.include_builtins,
             include_libs=self.include_libs,
             targets=self.targets,
+            var_mode=self.var_mode,
             background=self.background,
             code_size=self.code_size,
             vars_size=self.vars_size
